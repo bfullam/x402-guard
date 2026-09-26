@@ -1,0 +1,22 @@
+#!/usr/bin/env python3
+"""FAKE `mm` for dry-running the harness only. Signs nothing real.
+
+    PATH="$PWD/selftest:$PATH" ./run_matrix.sh
+"""
+import json
+import sys
+
+args = sys.argv[1:]
+if args[:2] == ["chains", "list"]:
+    data = {"chains": [{"key": "base", "name": "Base", "chainId": 8453, "caip2": "eip155:8453"},
+                       {"key": "base-sepolia", "name": "Base Sepolia", "chainId": 84532, "caip2": "eip155:84532"}]}
+elif args[:2] == ["token", "assets"]:
+    data = {"assets": []}
+elif args[:2] == ["wallet", "address"]:
+    data = {"address": "0x000000000000000000000000000000000000dEaD"}
+elif args[:2] == ["wallet", "sign-typed-data"]:
+    data = {"signature": "0x" + "ab" * 65}
+else:
+    print(json.dumps({"ok": False, "error": "fake mm: unsupported %s" % args}))
+    sys.exit(1)
+print(json.dumps({"ok": True, "data": data}))

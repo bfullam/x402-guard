@@ -1,0 +1,75 @@
+{
+  "name": "mm-plugin-x402-guard",
+  "version": "0.1.0",
+  "description": "Screen x402 payments with Intercepta before MetaMask Agent Wallet signs them: pay, cap, ask a human, or refuse.",
+  "license": "MIT",
+  "type": "module",
+  "keywords": [
+    "oclif-plugin"
+  ],
+  "files": [
+    "dist",
+    "oclif.manifest.json"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json && oclif manifest",
+    "prepack": "tsc -p tsconfig.json && oclif manifest"
+  },
+  "oclif": {
+    "bin": "mm",
+    "commands": "./dist/commands",
+    "topicSeparator": " ",
+    "topics": {
+      "x402": {
+        "description": "x402 payments screened by Intercepta"
+      }
+    }
+  },
+  "mm": {
+    "schemaVersion": 1,
+    "minCliVersion": "^7.0.0",
+    "capabilities": [],
+    "commands": [
+      {
+        "id": "x402:pay",
+        "capabilities": [
+          "wallet-read",
+          "wallet-submit"
+        ],
+        "dataAccess": [
+          "accounts",
+          "tokens"
+        ],
+        "targetChains": "any"
+      },
+      {
+        "id": "x402:inspect",
+        "capabilities": [
+          "wallet-read"
+        ],
+        "dataAccess": [
+          "accounts",
+          "tokens"
+        ]
+      },
+      {
+        "id": "x402:screen",
+        "capabilities": [],
+        "dataAccess": []
+      },
+      {
+        "id": "x402:config",
+        "capabilities": [],
+        "dataAccess": []
+      }
+    ]
+  },
+  "peerDependencies": {
+    "@metamask/agent-wallet": "^7.0.0"
+  },
+  "devDependencies": {
+    "@metamask/agent-wallet": "^6.2.0",
+    "oclif": "^4",
+    "typescript": "^5"
+  }
+}
