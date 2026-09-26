@@ -1,0 +1,17 @@
+<!doctype html><meta charset=utf-8><style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:1280px;height:720px;overflow:hidden;background:#0b0f17;color:#e6edf3;
+ font-family:-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif}
+.mono{font-family:"SF Mono",Menlo,Monaco,monospace}
+
+table{width:100%;border-collapse:collapse;margin-top:34px;font-size:21px}
+th{text-align:left;color:#8b98a9;font-weight:600;font-size:16px;text-transform:uppercase;letter-spacing:.6px;padding:0 0 12px}
+td{padding:17px 0;border-top:1px solid #1f2a3a}.bad{color:#f87171;font-weight:700}
+</style>
+<div style="padding:48px 60px">
+  <div style="font-size:34px;font-weight:700;letter-spacing:-.5px">The gap: x402 payments are signatures, and nobody screens the payee</div>
+  <div style="font-size:19px;color:#8b98a9;margin-top:8px">MetaMask Agent Wallet in Guard Mode on Base, before x402-guard. No 2FA prompt on any of these.</div>
+  <table>
+    <tr><th>x402 payment requested</th><th>Wallet</th><th>Would it settle? (eth_call)</th></tr><tr><td>2.4 USDC (96% of balance) → Tornado Cash router</td><td class=bad>signed</td><td>yes</td></tr><tr><td>0.01 USDC → OFAC-sanctioned Lazarus wallet</td><td class=bad>signed</td><td>no, frozen by Circle</td></tr><tr><td>lookalike &quot;USD Coin&quot;, one hex digit off real USDC</td><td class=bad>signed</td><td>n/a</td></tr><tr><td>authorization valid for 1 year</td><td class=bad>signed</td><td>not simulated (wallet unfunded then)</td></tr>
+  </table>
+</div>

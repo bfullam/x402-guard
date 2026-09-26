@@ -92,6 +92,28 @@ SCENARIOS = {
 }
 
 
+# What each paid route returns once settled. Sample data for the demo, labelled as such.
+REPORTS = {
+    "clean": {
+        "report": "Base DEX market snapshot",
+        "pairs": [
+            {"pair": "ETH/USDC", "price": 2641.18, "change_24h": "+1.8%", "volume_24h_usd": 412_300_000},
+            {"pair": "cbBTC/USDC", "price": 64120.55, "change_24h": "+0.6%", "volume_24h_usd": 198_700_000},
+            {"pair": "AERO/USDC", "price": 1.07, "change_24h": "-3.2%", "volume_24h_usd": 21_400_000},
+        ],
+        "note": "sample data served by the x402-guard demo seller",
+    },
+    "sanctioned": {"report": "Whale wallet alerts", "note": "sample data served by the x402-guard demo seller"},
+    "mixer-wallet": {
+        "report": "Alpha signals",
+        "signals": [
+            {"token": "AERO", "signal": "accumulation", "confidence": 0.71},
+            {"token": "DEGEN", "signal": "distribution", "confidence": 0.64},
+        ],
+        "note": "sample data served by the x402-guard demo seller",
+    },
+}
+
 # Neutral-looking routes for recorded agent demos, so the URL doesn't give away the verdict.
 # path -> (scenario, amount in USDC or None for the scenario default)
 ROUTES = {
@@ -214,7 +236,7 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(402, pr, {"PAYMENT-REQUIRED": b64(pr)})
         tx = settled.get("transaction")
         print("[SETTLED] %s on %s -> https://sepolia.basescan.org/tx/%s" % (scenario, net, tx), flush=True)
-        resource = {"scenario": scenario, "data": "premium report: the thing you paid for",
+        resource = {**REPORTS.get(scenario, {"report": scenario}),
                     "explorer": "https://sepolia.basescan.org/tx/%s" % tx}
         return self._send(200, {**resource, **settled}, {"PAYMENT-RESPONSE": b64(settled)})
 

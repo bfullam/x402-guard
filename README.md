@@ -28,10 +28,9 @@ The wallet signed every one of these, with no 2FA prompt:
 | x402 payment                                           | Signed? | Would it settle on Base?                 |
 | ------------------------------------------------------ | ------- | ---------------------------------------- |
 | 2.4 USDC (96% of the balance) to the Tornado Cash router | yes     | **yes**                                  |
-| 0.5 USDC to a wallet with 8 Tornado Cash deposits      | yes     | **yes**                                  |
 | 0.01 USDC to the OFAC-sanctioned Lazarus wallet        | yes     | no, Circle has frozen it in USDC         |
 | a lookalike "USD Coin" one hex digit off real USDC     | yes     | n/a                                      |
-| an authorization valid for 1 year                      | yes     | yes, until 2027                           |
+| an authorization valid for 1 year                      | yes     | not simulated (wallet was unfunded then) |
 
 Circle already freezes sanctions-listed addresses in USDC. MetaMask's scanning is built to catch threats *to the
 signer* (drainers, phishing). **Nobody checks who the agent is paying.** x402-guard adds that check.
