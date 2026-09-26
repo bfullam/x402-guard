@@ -2,3 +2,4 @@ gap-test/results/*.json
 gap-test/results/*.log
 __pycache__/
 .env
+demo/results/

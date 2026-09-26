@@ -61,8 +61,6 @@ signer* (drainers, phishing). **Nobody checks who the agent is paying.** x402-gu
   results into the verdict.
 - [`plugin/src/lib/flow.ts`](plugin/src/lib/flow.ts): `runX402` screens the authorization **before**
   `walletExecutor` signs it, and acts on the decision.
-- [`intercepta/client.py`](intercepta/client.py) and [`probe.py`](intercepta/probe.py): the Python client we used to
-  explore the API.
 
 ## Run it
 
@@ -75,7 +73,7 @@ echo 'INTERCEPTA_API_KEY=…' > .env
 ./demo/demo.sh     # one payment goes through, one is refused, one is held for a human
 ```
 
-The demo seller ([`gap-test/seller.py`](gap-test/seller.py)) serves x402 v2 challenges with real mainnet payees.
+The demo seller ([`demo/seller.py`](demo/seller.py)) serves x402 v2 challenges with real mainnet payees.
 It checks for real that your wallet signed, but it **never settles**, so no funds move. For agents, install
 [`plugin/skills/x402-guard/SKILL.md`](plugin/skills/x402-guard/SKILL.md) so they pay through `mm x402 pay`.
 
@@ -103,13 +101,10 @@ It checks for real that your wallet signed, but it **never settles**, so no fund
   inline without caching. Scan Token on a non-contract "lookalike" returns `riskScore 0` and `action: info`. The
   real signal is `trust: whitelist` vs `neutral`.
 
-Full notes: [`intercepta/FEEDBACK.md`](intercepta/FEEDBACK.md).
-
 ## Layout
 
 ```
 plugin/      the MetaMask Agent Wallet plugin (TypeScript): mm x402 pay | inspect | screen | config
-demo/        demo.sh: pay / refuse / ask a human, end to end
-gap-test/    the adversarial x402 seller and the test that showed unscreened signing
-intercepta/  Python API client, probe, and raw feedback notes
+demo/        demo.sh (pay / refuse / ask a human) and seller.py, the local x402 test seller
+gap-test/    evidence: the test that showed Guard Mode signs unscreened x402 payments
 ```

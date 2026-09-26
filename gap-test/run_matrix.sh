@@ -5,7 +5,7 @@
 #   ./run_matrix.sh                      # all scenarios on base + base-sepolia
 #   ./run_matrix.sh sanctioned base      # one scenario / network
 #
-# Needs seller.py running (default http://127.0.0.1:4020). If a 2FA approval
+# Needs demo/seller.py running (default http://127.0.0.1:4020). If a 2FA approval
 # arrives on your phone/email, note it and REJECT it; that counts as "held".
 set -uo pipefail
 cd "$(dirname "$0")"
@@ -37,4 +37,4 @@ for net in ${NETS[*]}; do
     printf '%-11s %-13s %-8s %s\n' "$s" "$net" "$result" "$detail" | tee -a "$LOG"
   done
 done
-echo; echo "Summary: $LOG   Raw output: ${LOG%.log}.raw.log   Captured signatures: results/*.json"
+echo; echo "Summary: $LOG   Raw output: ${LOG%.log}.raw.log   Captured signatures: demo/results/*.json"

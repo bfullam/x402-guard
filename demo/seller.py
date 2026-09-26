@@ -9,7 +9,7 @@ results/ and a fake settlement is returned.
 NOTHING IS EVER SETTLED ON-CHAIN. The signature is captured only as proof that
 the wallet was willing to sign; it is never submitted to a facilitator.
 
-    python3 seller.py [--port 4020]
+    python3 demo/seller.py [--port 4020]
     GET /s/<scenario>?net=base|base-sepolia[&amount=<USDC, e.g. 2.4>]
 """
 

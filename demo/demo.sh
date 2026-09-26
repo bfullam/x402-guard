@@ -12,7 +12,7 @@ PORT="${PORT:-4021}"
 SELLER="http://127.0.0.1:$PORT"
 NET="${NET:-base}"
 
-python3 gap-test/seller.py --port "$PORT" > /dev/null 2>&1 &
+python3 demo/seller.py --port "$PORT" > /dev/null 2>&1 &
 SELLER_PID=$!
 trap 'kill $SELLER_PID 2>/dev/null' EXIT
 sleep 1

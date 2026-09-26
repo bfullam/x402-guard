@@ -4,7 +4,7 @@ x402 payments are EIP-3009 `TransferWithAuthorization` **signatures** (`mm walle
 not transactions. MetaMask's docs describe Blockaid scanning and outflow limits for transactions and
 say signatures are excluded from outflow tracking. This harness checks what actually happens.
 
-`seller.py` is a local x402 v2 seller that asks for bad payments. `run_matrix.sh` pays each one with
+[`../demo/seller.py`](../demo/seller.py) is a local x402 v2 seller that asks for bad payments. `run_matrix.sh` pays each one with
 MetaMask's own helper (`vendor/x402_pay.py`, unmodified from `MetaMask/agent-skills`) and records
 whether the wallet signed. **Nothing is ever settled on-chain**: the seller logs the signature and
 returns a fake receipt.
@@ -24,7 +24,7 @@ Sanctions status verified with the Chainalysis oracle on Ethereum mainnet.
 
 ```bash
 npm i -g @metamask/agent-wallet && mm login && mm init --mode guard && mm doctor
-python3 gap-test/seller.py            # terminal 1
+python3 demo/seller.py                # terminal 1
 gap-test/run_matrix.sh                # terminal 2; or: run_matrix.sh sanctioned base
 ```
 
