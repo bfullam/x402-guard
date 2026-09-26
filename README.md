@@ -70,11 +70,15 @@ cd plugin && npm install && npm run build && ./scripts-link-host.sh
 mm config set experimentalPlugins true && mm config set experimentalAllowUnverifiedInstalls true
 mm plugins install "file:$PWD" --accept-permissions && cd ..
 echo 'INTERCEPTA_API_KEY=…' > .env
-./demo/demo.sh     # one payment goes through, one is refused, one is held for a human
+./demo/demo.sh     # one payment settles on Base Sepolia, one is refused, one is held for a human
 ```
 
-The demo seller ([`demo/seller.py`](demo/seller.py)) serves x402 v2 challenges with real mainnet payees.
-It checks for real that your wallet signed, but it **never settles**, so no funds move. For agents, install
+The demo seller ([`demo/seller.py`](demo/seller.py)) serves x402 v2 challenges whose payees are real **mainnet**
+addresses, screened with Intercepta's mainnet data. Payments run on **Base Sepolia**, and the one that passes is
+verified and settled on-chain through the public x402 facilitator (`--settle`). Example settlement:
+[`0x2116bb…cc07`](https://sepolia.basescan.org/tx/0x2116bbadfd09dee1b3ad41d7f17862aaae8d17f35d83a23aafd93221def5cc07)
+(0.01 USDC, agent wallet → seller). Without `--settle` (and always on mainnet) the seller keeps the signature
+and never settles. For agents, install
 [`plugin/skills/x402-guard/SKILL.md`](plugin/skills/x402-guard/SKILL.md) so they pay through `mm x402 pay`.
 
 ## Limits we're honest about

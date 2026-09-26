@@ -2,17 +2,17 @@
 # x402-guard demo: one payment goes through, one is refused, one is held for a human.
 #
 # Needs: mm logged in (Guard Mode), the plugin installed (see plugin/README.md),
-# INTERCEPTA_API_KEY in the environment or ./.env, and a little USDC on Base.
-# The local seller screens real mainnet addresses but NEVER settles: it keeps the signature and
-# returns a receipt, so no funds move.
+# INTERCEPTA_API_KEY in the environment or ./.env, and test USDC on Base Sepolia (faucet.circle.com).
+# Payments run on Base Sepolia and the one that passes is settled for real through the public x402
+# facilitator. Payees are real mainnet addresses, screened with Intercepta's mainnet risk data.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 [ -f .env ] && { set -a; . ./.env; set +a; }
 PORT="${PORT:-4021}"
 SELLER="http://127.0.0.1:$PORT"
-NET="${NET:-base}"
+NET="${NET:-base-sepolia}"
 
-python3 demo/seller.py --port "$PORT" > /dev/null 2>&1 &
+python3 demo/seller.py --port "$PORT" --settle > /dev/null 2>&1 &
 SELLER_PID=$!
 trap 'kill $SELLER_PID 2>/dev/null' EXIT
 sleep 1

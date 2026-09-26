@@ -6,10 +6,11 @@ each a different kind of bad (or clean) payment request. When the client
 retries with a PAYMENT-SIGNATURE, the signed authorization is logged to
 results/ and a fake settlement is returned.
 
-NOTHING IS EVER SETTLED ON-CHAIN. The signature is captured only as proof that
-the wallet was willing to sign; it is never submitted to a facilitator.
+By default NOTHING IS SETTLED ON-CHAIN: the signature is captured only as proof that
+the wallet was willing to sign. With --settle, base-sepolia payments are verified and
+settled for real through the public x402 facilitator; mainnet payments never are.
 
-    python3 demo/seller.py [--port 4020]
+    python3 demo/seller.py [--port 4020] [--settle]
     GET /s/<scenario>?net=base|base-sepolia[&amount=<USDC, e.g. 2.4>]
 """
 
@@ -17,11 +18,15 @@ import argparse
 import base64
 import json
 import time
+import urllib.error
+import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 RESULTS = Path(__file__).parent / "results"
+FACILITATOR = "https://x402.org/facilitator"
+SETTLE = False  # --settle: settle base-sepolia payments for real through the public facilitator
 
 # Real Circle USDC per network, with the EIP-712 domain its contract uses.
 NETWORKS = {
@@ -112,6 +117,22 @@ def challenge(scenario, net, url, amount=None):
     }
 
 
+def facilitator(path, body):
+    req = urllib.request.Request(
+        FACILITATOR + path, data=json.dumps(body).encode(), method="POST",
+        headers={"Content-Type": "application/json", "User-Agent": "x402-guard-demo-seller/0.1"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        text = e.read().decode("utf-8", "replace")
+        try:
+            return json.loads(text)
+        except ValueError:
+            return {"isValid": False, "success": False, "invalidReason": "HTTP %s: %s" % (e.code, text[:200])}
+
+
 class Handler(BaseHTTPRequestHandler):
     def _send(self, status, body, headers=None):
         data = json.dumps(body, indent=2).encode()
@@ -142,6 +163,8 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(402, pr, {"PAYMENT-REQUIRED": b64(pr)})
 
         payment = json.loads(base64.b64decode(paid))
+        if SETTLE and net == "base-sepolia":
+            return self._settle(scenario, net, url, amount, payment)
         RESULTS.mkdir(exist_ok=True)
         out = RESULTS / ("%s_%s_%d.json" % (scenario, net, int(time.time())))
         out.write_text(json.dumps({"scenario": scenario, "network": net, "payment": payment}, indent=2))
@@ -159,6 +182,27 @@ class Handler(BaseHTTPRequestHandler):
             {"PAYMENT-RESPONSE": b64(receipt)},
         )
 
+    def _settle(self, scenario, net, url, amount, payment):
+        """Verify, then settle on-chain through the x402 facilitator (x402 v2 spec, section 7)."""
+        # Requirements come from our own offer, never from what the client echoes back.
+        requirements = challenge(scenario, net, url, amount)["accepts"][0]
+        body = {"x402Version": 2, "paymentPayload": payment, "paymentRequirements": requirements}
+        verify = facilitator("/verify", body)
+        if not verify.get("isValid"):
+            print("[REJECTED] %s: %s" % (scenario, verify), flush=True)
+            pr = dict(challenge(scenario, net, url, amount), error=verify.get("invalidReason", "invalid payment"))
+            return self._send(402, pr, {"PAYMENT-REQUIRED": b64(pr)})
+        settled = facilitator("/settle", body)
+        if not settled.get("success"):
+            print("[SETTLE FAILED] %s: %s" % (scenario, settled), flush=True)
+            pr = dict(challenge(scenario, net, url, amount), error=settled.get("errorReason", "settlement failed"))
+            return self._send(402, pr, {"PAYMENT-REQUIRED": b64(pr)})
+        tx = settled.get("transaction")
+        print("[SETTLED] %s on %s -> https://sepolia.basescan.org/tx/%s" % (scenario, net, tx), flush=True)
+        resource = {"scenario": scenario, "data": "premium report: the thing you paid for",
+                    "explorer": "https://sepolia.basescan.org/tx/%s" % tx}
+        return self._send(200, {**resource, **settled}, {"PAYMENT-RESPONSE": b64(settled)})
+
     def log_message(self, fmt, *args):
         print("%s  %s" % (self.address_string(), fmt % args), flush=True)
 
@@ -166,7 +210,9 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=4020)
-    port = ap.parse_args().port
+    ap.add_argument("--settle", action="store_true", help="settle base-sepolia payments on-chain via %s" % FACILITATOR)
+    args = ap.parse_args()
+    port, SETTLE = args.port, args.settle
     print("x402 gap-test seller on http://127.0.0.1:%d/s/<scenario>?net=base|base-sepolia" % port)
     for k, (d, _) in SCENARIOS.items():
         print("  %-11s %s" % (k, d))
