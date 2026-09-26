@@ -92,6 +92,15 @@ SCENARIOS = {
 }
 
 
+# Neutral-looking routes for recorded agent demos, so the URL doesn't give away the verdict.
+# path -> (scenario, amount in USDC or None for the scenario default)
+ROUTES = {
+    "reports/market-data": ("clean", None),
+    "reports/whale-alerts": ("sanctioned", None),
+    "reports/alpha-signals": ("mixer-wallet", "0.5"),
+}
+
+
 def b64(obj):
     return base64.b64encode(json.dumps(obj).encode()).decode()
 
@@ -147,12 +156,18 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         u = urlparse(self.path)
         parts = u.path.strip("/").split("/")
-        if len(parts) != 2 or parts[0] != "s" or parts[1] not in SCENARIOS:
-            return self._send(404, {"scenarios": {k: v[0] for k, v in SCENARIOS.items()}})
-        scenario = parts[1]
         q = parse_qs(u.query)
-        net = q.get("net", ["base"])[0]
-        amount = q.get("amount", [None])[0]
+        route = ROUTES.get(u.path.strip("/"))
+        if route:
+            scenario, amount = route
+            amount = q.get("amount", [amount])[0]
+            net = q.get("net", ["base-sepolia"])[0]
+        elif len(parts) == 2 and parts[0] == "s" and parts[1] in SCENARIOS:
+            scenario = parts[1]
+            amount = q.get("amount", [None])[0]
+            net = q.get("net", ["base"])[0]
+        else:
+            return self._send(404, {"scenarios": {k: v[0] for k, v in SCENARIOS.items()}, "routes": list(ROUTES)})
         if net not in NETWORKS:
             return self._send(400, {"error": "net must be one of %s" % list(NETWORKS)})
         url = "http://%s%s" % (self.headers.get("Host"), self.path)
