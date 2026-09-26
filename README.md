@@ -1,20 +1,12 @@
 # x402-guard: Intercepta screening for MetaMask Agent Wallet x402 payments
 
+![x402-guard](demo/assets/cover.png)
+
 **MetaMask stops your agent from getting robbed. x402-guard stops it from paying the wrong people.**
 
 x402-guard is a [MetaMask Agent Wallet](https://docs.metamask.io/agent-wallet/) plugin. It screens every x402 payment
 with the [Intercepta](https://intercepta.io) API **before the wallet signs it**, shows the verdict with its reasons,
 and lets that verdict decide what happens: **pay**, **cap**, **ask a human**, or **refuse**.
-
-```
-$ mm x402 pay https://seller.example/report
-x402 payment: $0.01 to 0x098B716B8Aaf21512996dC57EB0615e2383E2f96 on eip155:8453
-  ✖ quick-scan   toxicScore 100: known_scammer(100), sanction_address(100), blacklist(100)
-  ✖ deep-scan    toxicScore 100: …, sanction_address_communication(85, 16 txs)
-  ✔ token        USDC verified (trust=whitelist)
-  ✖ scan-message High: KNOWN_MALICIOUS
-⛔ REFUSE  [counterparty: blocked]
-```
 
 ## The gap we found
 
@@ -51,6 +43,24 @@ signer* (drainers, phishing). **Nobody checks who the agent is paying.** x402-gu
   any of them, the approval is void.
 - Signing still goes through MetaMask's own policy pipeline, so this adds to Guard Mode rather than replacing it.
 - `mm x402 screen <address>` gives a counterparty risk profile on its own: tier, reasons, and how much to trust it.
+
+## Demo
+
+An agent buys three reports. Payments run on Base Sepolia; every payee is a real mainnet address screened with
+Intercepta's mainnet data. All three are real `mm x402 pay` runs.
+
+**Clean seller: paid and settled**
+([`0x202017…6ad1`](https://sepolia.basescan.org/tx/0x202017ba16edef8466bb1276bc82fc4ac1d96ea4a6b51938b76409391c386ad1))
+
+![Paid](demo/assets/pay.png)
+
+**Sanctioned payee (Lazarus Group): refused before anything is signed**
+
+![Refused](demo/assets/refuse.png)
+
+**Payee with 8 Tornado Cash deposits, $0.50 over its $0.10 caution ceiling: the human decides**
+
+![Ask a human](demo/assets/ask.png)
 
 ## Where the Intercepta API is called
 
